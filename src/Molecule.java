@@ -14,20 +14,58 @@ public class Molecule {
         this.substituentLabels = new HashMap<>();
     }
 
-    // Создание основной цепи
-    public void createMainChain(int carbons) {
+    // Автоматическое создание цепи с масштабированием
+    public void createMainChain(int carbons, int panelWidth, int panelHeight) {
         mainChain.clear();
 
-        int startX = 100;
-        int y = 200;
-        int step = 80;
+        // Рассчитываем размеры
+        int baseStep;
+        if (carbons <= 2) {
+            baseStep = 100; // Большой шаг для маленьких молекул
+        } else if (carbons <= 4) {
+            baseStep = 80; // Средний шаг
+        } else {
+            baseStep = Math.max(40, 400 / carbons); // Автоматическое уменьшение
+        }
 
+        int stepX = baseStep;
+        int stepY = baseStep / 2;
+
+        // Центрируем
+        int totalWidth = (carbons - 1) * stepX;
+        int startX = (panelWidth - totalWidth) / 2;
+        if (startX < 50) startX = 50;
+
+        int startY = panelHeight / 2;
+        if (startY < 100) startY = 100;
+
+        // Создаем цепь
         for (int i = 0; i < carbons; i++) {
-            if (i % 2 == 0) {
-                mainChain.add(new Point(startX + i * step, y));
-            } else {
-                mainChain.add(new Point(startX + i * step, y + 40));
-            }
+            int x = startX + i * stepX;
+            int y = (i % 2 == 0) ? startY : startY + stepY;
+            mainChain.add(new Point(x, y));
+        }
+
+        // Корректируем для очень длинных цепей
+        if (carbons > 6) {
+            scaleChain(0.8, panelWidth, panelHeight);
+        }
+    }
+
+    // Масштабирование цепи
+    private void scaleChain(double factor, int panelWidth, int panelHeight) {
+        if (mainChain.isEmpty()) return;
+
+        // Центр цепи
+        int centerX = panelWidth / 2;
+        int centerY = panelHeight / 2;
+
+        // Масштабируем
+        for (Point p : mainChain) {
+            int dx = p.x - centerX;
+            int dy = p.y - centerY;
+            p.x = centerX + (int)(dx * factor);
+            p.y = centerY + (int)(dy * factor);
         }
     }
 
@@ -38,21 +76,31 @@ public class Molecule {
         Point carbonPos = mainChain.get(carbonIndex);
         ArrayList<Point> subPoints = new ArrayList<>();
 
-        // Направление заместителя
-        int dx = 0, dy = 0;
+        // Длина заместителя зависит от размера молекулы
+        int length = 40;
+        if (mainChain.size() > 4) length = 30;
 
-        if (carbonIndex == 0) { // Первый атом
-            dx = -40;
-            dy = -40;
-        } else if (carbonIndex == mainChain.size() - 1) { // Последний атом
-            dx = 40;
-            dy = -40;
-        } else { // Средний атом
-            dx = 40;
-            dy = -40;
+        int dx = 0, dy = -length; // По умолчанию вверх
+
+        // Для крайних атомов - диагонально
+        if (carbonIndex == 0) {
+            dx = -length;
+            dy = -length;
+        } else if (carbonIndex == mainChain.size() - 1) {
+            dx = length;
+            dy = -length;
+        } else {
+            // Для средних атомов - перпендикулярно цепи
+            dx = length;
+            dy = 0;
+
+            // Чередуем направления
+            if (carbonIndex % 2 == 0) {
+                dx = -dx;
+            }
         }
 
-        Point start = new Point(carbonPos.x, carbonPos.y);
+        Point start = carbonPos;
         Point end = new Point(carbonPos.x + dx, carbonPos.y + dy);
 
         subPoints.add(start);
@@ -62,112 +110,159 @@ public class Molecule {
         substituentLabels.put(carbonIndex, label);
     }
 
-    // Добавление метильной группы
     public void addMethyl(int carbonIndex) {
-        addSubstituent(carbonIndex, "CH3");
+        addSubstituent(carbonIndex, "CH₃");
     }
 
-    // Парсинг названия молекулы
-    public static Molecule parseMolecule(String formula) {
+    // Статический метод для создания молекул
+    public static Molecule parseMolecule(String formula, int panelWidth, int panelHeight) {
         formula = formula.toLowerCase().trim();
         Molecule molecule = null;
+        int carbons = 0;
 
+        // Определяем основное название и количество атомов
         if (formula.contains("метан")) {
             molecule = new Molecule("Метан");
-            molecule.createMainChain(1);
-
-            if (formula.contains("хлор")) {
-                molecule.addSubstituent(0, "Cl");
-            }
-            if (formula.contains("бром")) {
-                molecule.addSubstituent(0, "Br");
-            }
-
+            carbons = 1;
         } else if (formula.contains("этан")) {
             molecule = new Molecule("Этан");
-            molecule.createMainChain(2);
-
-            if (formula.contains("хлор") || formula.contains("1-хлор")) {
-                molecule.addSubstituent(0, "Cl");
-            }
-            if (formula.contains("2-хлор")) {
-                molecule.addSubstituent(1, "Cl");
-            }
-
+            carbons = 2;
         } else if (formula.contains("пропан")) {
             molecule = new Molecule("Пропан");
-            molecule.createMainChain(3);
-
-            if (formula.contains("2-метил")) {
-                molecule.addMethyl(1);
-            }
-            if (formula.contains("2-хлор")) {
-                molecule.addSubstituent(1, "Cl");
-            }
-
+            carbons = 3;
         } else if (formula.contains("бутан")) {
             molecule = new Molecule("Бутан");
-            molecule.createMainChain(4);
+            carbons = 4;
+        } else if (formula.contains("пентан")) {
+            molecule = new Molecule("Пентан");
+            carbons = 5;
+        } else if (formula.contains("гексан")) {
+            molecule = new Molecule("Гексан");
+            carbons = 6;
+        } else {
+            // По умолчанию
+            molecule = new Molecule(formula);
+            carbons = 4;
+        }
 
-            if (formula.contains("2-метил")) {
+        // Создаем цепь
+        molecule.createMainChain(carbons, panelWidth, panelHeight);
+
+        // Добавляем заместители
+        if (formula.contains("метил")) {
+            if (formula.contains("2-метил") || formula.contains("2-мети")) {
                 molecule.addMethyl(1);
+            } else if (formula.contains("3-метил")) {
+                molecule.addMethyl(2);
+            } else {
+                molecule.addMethyl(1); // По умолчанию на позицию 2
             }
+        }
+
+        if (formula.contains("хлор")) {
+            if (formula.contains("1-хлор")) {
+                molecule.addSubstituent(0, "Cl");
+            } else if (formula.contains("2-хлор")) {
+                molecule.addSubstituent(1, "Cl");
+            } else if (formula.contains("3-хлор")) {
+                molecule.addSubstituent(2, "Cl");
+            }
+        }
+
+        if (formula.contains("бром")) {
+            if (formula.contains("2-бром")) {
+                molecule.addSubstituent(1, "Br");
+            }
+        }
+
+        if (formula.contains("диметил")) {
             if (formula.contains("2,3-диметил")) {
                 molecule.addMethyl(1);
                 molecule.addMethyl(2);
             }
-        } else {
-            // По умолчанию рисуем бутан
-            molecule = new Molecule("Бутан");
-            molecule.createMainChain(4);
         }
 
         return molecule;
     }
 
+    // Метод отрисовки
     public void draw(Graphics g) {
         Graphics2D g2d = (Graphics2D) g;
 
-        // Рисуем основную цепь
-        g2d.setColor(Color.BLACK);
-        g2d.setStroke(new BasicStroke(3));
+        // Включаем сглаживание
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                RenderingHints.VALUE_ANTIALIAS_ON);
 
+        // Толщина линий
+        int lineWidth = Math.max(2, 4 - mainChain.size() / 3);
+        g2d.setStroke(new BasicStroke(lineWidth));
+
+        // Рисуем основную цепь (черная)
+        g2d.setColor(Color.BLACK);
         for (int i = 0; i < mainChain.size() - 1; i++) {
             Point p1 = mainChain.get(i);
             Point p2 = mainChain.get(i + 1);
             g2d.drawLine(p1.x, p1.y, p2.x, p2.y);
         }
 
-        // Рисуем вершины
+        // Рисуем атомы углерода (красные точки)
+        int pointSize = Math.max(4, 8 - mainChain.size());
         g2d.setColor(Color.RED);
         for (Point p : mainChain) {
-            g2d.fillOval(p.x - 3, p.y - 3, 6, 6);
+            g2d.fillOval(p.x - pointSize, p.y - pointSize,
+                    pointSize * 2, pointSize * 2);
         }
 
-        // Рисуем заместители
+        // Рисуем заместители (синие линии)
         g2d.setColor(Color.BLUE);
-        g2d.setStroke(new BasicStroke(2));
+        g2d.setStroke(new BasicStroke(lineWidth - 1));
 
-        for (Integer carbonIndex : substituents.keySet()) {
-            ArrayList<Point> subPoints = substituents.get(carbonIndex);
-
-            if (subPoints.size() >= 2) {
-                Point p1 = subPoints.get(0);
-                Point p2 = subPoints.get(1);
+        for (Integer index : substituents.keySet()) {
+            ArrayList<Point> points = substituents.get(index);
+            if (points.size() >= 2) {
+                Point p1 = points.get(0);
+                Point p2 = points.get(1);
                 g2d.drawLine(p1.x, p1.y, p2.x, p2.y);
 
-                // Подпись заместителя
-                String label = substituentLabels.get(carbonIndex);
+                // Подписываем заместитель
+                String label = substituentLabels.get(index);
                 if (label != null) {
-                    g2d.setColor(Color.BLACK);
-                    g2d.drawString(label, p2.x + 5, p2.y - 5);
+                    g2d.setColor(Color.DARK_GRAY);
+                    g2d.setFont(new Font("Arial", Font.PLAIN, 12));
+
+                    int labelX = p2.x;
+                    int labelY = p2.y;
+
+                    // Позиционируем текст
+                    if (p2.y < p1.y) {
+                        labelY = p2.y - 5;
+                    } else {
+                        labelY = p2.y + 15;
+                    }
+
+                    // Центрируем
+                    FontMetrics fm = g2d.getFontMetrics();
+                    int textWidth = fm.stringWidth(label);
+                    labelX -= textWidth / 2;
+
+                    g2d.drawString(label, labelX, labelY);
                     g2d.setColor(Color.BLUE);
                 }
             }
         }
 
-        // Название молекулы
+        // Подписываем название молекулы
         g2d.setColor(Color.BLACK);
-        g2d.drawString(name, 50, 50);
+        g2d.setFont(new Font("Arial", Font.BOLD, 16));
+        g2d.drawString(name, 20, 30);
+
+        // Информация о молекуле
+        g2d.setFont(new Font("Arial", Font.PLAIN, 14));
+        g2d.drawString("Цепь из " + mainChain.size() + " атомов C", 20, 50);
+    }
+
+    // Геттер для количества атомов углерода
+    public int getCarbonCount() {
+        return mainChain.size();
     }
 }
