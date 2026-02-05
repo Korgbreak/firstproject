@@ -91,12 +91,12 @@ public class Molecule {
             dy = -length;
         } else {
             // Для средних атомов - перпендикулярно цепи
-            dx = length;
-            dy = 0;
+            dx = 0;
+            dy = 40;
 
             // Чередуем направления
             if (carbonIndex % 2 == 0) {
-                dx = -dx;
+                dy = -dy;
             }
         }
 
@@ -111,7 +111,7 @@ public class Molecule {
     }
 
     public void addMethyl(int carbonIndex) {
-        addSubstituent(carbonIndex, "CH₃");
+        addSubstituent(carbonIndex, "CH3");
     }
 
     // Статический метод для создания молекул
@@ -150,7 +150,7 @@ public class Molecule {
 
         // Добавляем заместители
         if (formula.contains("метил")) {
-            if (formula.contains("2-метил") || formula.contains("2-мети")) {
+            if (formula.contains("2-метил")) {
                 molecule.addMethyl(1);
             } else if (formula.contains("3-метил")) {
                 molecule.addMethyl(2);
