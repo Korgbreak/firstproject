@@ -4,8 +4,9 @@ import java.awt.event.*;
 
 public class MyPanel extends JPanel {
     private Molecule molecule;
-    private JComboBox<String> moleculeSelector;
+    private JTextField inputField;
     private JLabel infoLabel;
+    private JButton drawButton;
 
     public MyPanel() {
         setLayout(new BorderLayout());
@@ -13,70 +14,83 @@ public class MyPanel extends JPanel {
         // Панель управления сверху
         JPanel controlPanel = new JPanel();
         controlPanel.setBackground(new Color(240, 240, 240));
+        controlPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 10, 10));
 
-        // Выпадающий список для выбора молекулы
-        String[] molecules = {
-                "Выберите молекулу",
-                "Метан",
-                "Этан",
-                "Пропан",
-                "Бутан",
-                "Пентан",
-                "Гексан",
-                "2-Метилпропан",
-                "2-Хлорпропан",
-                "2,3-Диметилбутан",
-                "1-Хлорбутан",
-                "2-Бромпропан"
-        };
+        // Текстовое поле для ввода
+        JLabel inputLabel = new JLabel("Введите название соединения:");
+        inputField = new JTextField(20);
+        inputField.setFont(new Font("Arial", Font.PLAIN, 14));
 
-        moleculeSelector = new JComboBox<>(molecules);
-        moleculeSelector.setPreferredSize(new Dimension(200, 30));
-
-        moleculeSelector.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                String selected = (String) moleculeSelector.getSelectedItem();
-                if (!selected.equals("Выберите молекулу")) {
-                    molecule = Molecule.parseMolecule(selected, getWidth(), getHeight());
-                    updateInfoLabel();
-                    repaint();
-                }
-            }
-        });
-
-        // Кнопка для случайной молекулы
-        JButton randomButton = new JButton("Случайная молекула");
-        randomButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                String[] randomMolecules = {
-                        "Метан", "Этан", "Пропан", "Бутан", "Пентан",
-                        "2-Метилпропан", "2-Хлорпропан", "2,3-Диметилбутан"
-                };
-                int index = (int)(Math.random() * randomMolecules.length);
-                moleculeSelector.setSelectedItem(randomMolecules[index]);
-            }
-        });
+        // Кнопка для рисования
+        drawButton = new JButton("Нарисовать");
+        drawButton.setFont(new Font("Arial", Font.BOLD, 14));
 
         // Информационная метка
-        infoLabel = new JLabel("Выберите молекулу для отображения");
+        infoLabel = new JLabel("Введите название и нажмите 'Нарисовать'");
         infoLabel.setFont(new Font("Arial", Font.PLAIN, 14));
 
-        controlPanel.add(new JLabel("Молекула: "));
-        controlPanel.add(moleculeSelector);
-        controlPanel.add(randomButton);
+        // Примеры подсказок
+        JLabel examplesLabel = new JLabel("Примеры: метан, этан, пропан, 2-метилпропан, 2-хлорпропан");
+        examplesLabel.setFont(new Font("Arial", Font.ITALIC, 12));
+        examplesLabel.setForeground(Color.GRAY);
+
+        // Добавляем компоненты
+        controlPanel.add(inputLabel);
+        controlPanel.add(inputField);
+        controlPanel.add(drawButton);
+        controlPanel.add(new JSeparator(SwingConstants.VERTICAL));
         controlPanel.add(infoLabel);
 
-        add(controlPanel, BorderLayout.NORTH);
+        // Панель для примеров
+        JPanel examplesPanel = new JPanel();
+        examplesPanel.setBackground(new Color(250, 250, 250));
+        examplesPanel.add(examplesLabel);
 
-        // Начальная молекула для примера
-        molecule = Molecule.parseMolecule("Бутан", getWidth(), getHeight());
+        JPanel topPanel = new JPanel(new BorderLayout());
+        topPanel.add(controlPanel, BorderLayout.NORTH);
+        topPanel.add(examplesPanel, BorderLayout.SOUTH);
+
+        add(topPanel, BorderLayout.NORTH);
+
+        // Обработчик кнопки
+        drawButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                drawMolecule();
+            }
+        });
+
+        // Обработчик нажатия Enter в текстовом поле
+        inputField.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                drawMolecule();
+            }
+        });
+
+        // Начальная молекула
+        molecule = Molecule.parseMolecule("бутан", getWidth(), getHeight());
+
+        // Фокус на поле ввода
+        SwingUtilities.invokeLater(() -> inputField.requestFocus());
     }
 
-    private void updateInfoLabel() {
+    private void drawMolecule() {
+        String formula = inputField.getText().trim();
+        if (!formula.isEmpty()) {
+            molecule = Molecule.parseMolecule(formula, getWidth(), getHeight());
+            updateInfoLabel(formula);
+            repaint();
+        } else {
+            JOptionPane.showMessageDialog(this,
+                    "Пожалуйста, введите название соединения",
+                    "Внимание", JOptionPane.WARNING_MESSAGE);
+        }
+    }
+
+    private void updateInfoLabel(String formula) {
         if (molecule != null) {
-            String info = "Цепь из " + molecule.getCarbonCount() + " атомов углерода";
+            String info = formula + " - цепь из " + molecule.getCarbonCount() + " атомов C";
             infoLabel.setText(info);
         }
     }
@@ -103,7 +117,10 @@ public class MyPanel extends JPanel {
         int legendY = 100;
 
         g.setColor(Color.BLACK);
+        g.setFont(new Font("Arial", Font.BOLD, 14));
         g.drawString("Легенда:", legendX, legendY);
+
+        g.setFont(new Font("Arial", Font.PLAIN, 12));
 
         g.setColor(Color.BLACK);
         g.drawLine(legendX, legendY + 20, legendX + 40, legendY + 20);
@@ -118,6 +135,17 @@ public class MyPanel extends JPanel {
         g.fillOval(legendX + 15, legendY + 55, 10, 10);
         g.setColor(Color.BLACK);
         g.drawString("- атом углерода", legendX + 50, legendY + 65);
+
+        // Примеры использования
+        g.setColor(Color.DARK_GRAY);
+        g.setFont(new Font("Arial", Font.PLAIN, 11));
+        g.drawString("Примеры ввода:", legendX, legendY + 90);
+        g.drawString("• метан", legendX + 10, legendY + 110);
+        g.drawString("• этан", legendX + 10, legendY + 125);
+        g.drawString("• пропан", legendX + 10, legendY + 140);
+        g.drawString("• 2-метилпропан", legendX + 10, legendY + 155);
+        g.drawString("• 2-хлорпропан", legendX + 10, legendY + 170);
+        g.drawString("• 2,3-диметилбутан", legendX + 10, legendY + 185);
     }
 
     @Override

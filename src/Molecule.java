@@ -18,18 +18,15 @@ public class Molecule {
     public void createMainChain(int carbons, int panelWidth, int panelHeight) {
         mainChain.clear();
 
-        // Рассчитываем размеры
-        int baseStep;
-        if (carbons <= 2) {
-            baseStep = 100; // Большой шаг для маленьких молекул
-        } else if (carbons <= 4) {
-            baseStep = 80; // Средний шаг
-        } else {
-            baseStep = Math.max(40, 400 / carbons); // Автоматическое уменьшение
-        }
+        if (carbons <= 0) carbons = 1;
 
-        int stepX = baseStep;
-        int stepY = baseStep / 2;
+        // Рассчитываем оптимальный размер
+        int availableWidth = panelWidth - 100; // Отступы по бокам
+        int maxStep = 80;
+        int minStep = 30;
+
+        int stepX = Math.max(minStep, Math.min(maxStep, availableWidth / Math.max(1, carbons - 1)));
+        int stepY = stepX / 2;
 
         // Центрируем
         int totalWidth = (carbons - 1) * stepX;
@@ -39,33 +36,21 @@ public class Molecule {
         int startY = panelHeight / 2;
         if (startY < 100) startY = 100;
 
-        // Создаем цепь
+        // Создаем зигзагообразную цепь
         for (int i = 0; i < carbons; i++) {
             int x = startX + i * stepX;
-            int y = (i % 2 == 0) ? startY : startY + stepY;
+            int y;
+
+            if (carbons == 1) {
+                y = startY; // Для метана просто центр
+            } else if (carbons == 2) {
+                y = startY; // Для этана горизонтально
+            } else {
+                // Зигзаг для 3+ атомов
+                y = (i % 2 == 0) ? startY : startY + stepY;
+            }
+
             mainChain.add(new Point(x, y));
-        }
-
-        // Корректируем для очень длинных цепей
-        if (carbons > 6) {
-            scaleChain(0.8, panelWidth, panelHeight);
-        }
-    }
-
-    // Масштабирование цепи
-    private void scaleChain(double factor, int panelWidth, int panelHeight) {
-        if (mainChain.isEmpty()) return;
-
-        // Центр цепи
-        int centerX = panelWidth / 2;
-        int centerY = panelHeight / 2;
-
-        // Масштабируем
-        for (Point p : mainChain) {
-            int dx = p.x - centerX;
-            int dy = p.y - centerY;
-            p.x = centerX + (int)(dx * factor);
-            p.y = centerY + (int)(dy * factor);
         }
     }
 
@@ -76,27 +61,51 @@ public class Molecule {
         Point carbonPos = mainChain.get(carbonIndex);
         ArrayList<Point> subPoints = new ArrayList<>();
 
-        // Длина заместителя зависит от размера молекулы
+        // Определяем длину и направление
         int length = 40;
         if (mainChain.size() > 4) length = 30;
 
-        int dx = 0, dy = -length; // По умолчанию вверх
+        int dx = 0, dy = 0;
 
-        // Для крайних атомов - диагонально
-        if (carbonIndex == 0) {
+        // Определяем направление в зависимости от положения атома
+        if (mainChain.size() == 1) {
+            // Метан - во все стороны (рисуем только один заместитель)
+            dx = 0;
+            dy = -length;
+        } else if (carbonIndex == 0) {
+            // Первый атом - влево-вверх
             dx = -length;
             dy = -length;
         } else if (carbonIndex == mainChain.size() - 1) {
+            // Последний атом - вправо-вверх
             dx = length;
             dy = -length;
         } else {
-            // Для средних атомов - перпендикулярно цепи
-            dx = 0;
-            dy = 40;
+            // Средние атомы - перпендикулярно цепи
+            Point prev = mainChain.get(carbonIndex - 1);
+            Point next = mainChain.get(carbonIndex + 1);
 
-            // Чередуем направления
-            if (carbonIndex % 2 == 0) {
+            // Вектор связи
+            int bondDx = next.x - prev.x;
+            int bondDy = next.y - prev.y;
+
+            // Перпендикулярный вектор (поворот на 90°)
+            dx = -bondDy;
+            dy = bondDx;
+
+            // Нормализуем
+            double bondLength = Math.sqrt(dx*dx + dy*dy);
+            if (bondLength > 0) {
+                dx = (int)(dx / bondLength * length);
+                dy = (int)(dy / bondLength * length);
+            }
+
+            // Направляем вверх
+            if ((dy >0) && (carbonIndex % 2 == 0)) {
+                dx = -dx;
                 dy = -dy;
+            } else if (dy >0){
+                dx=-dx;
             }
         }
 
@@ -114,13 +123,26 @@ public class Molecule {
         addSubstituent(carbonIndex, "CH3");
     }
 
-    // Статический метод для создания молекул
+    public void addEthyl(int carbonIndex) {
+        addSubstituent(carbonIndex, "C2H5");
+    }
+
+    public void addHydroxyl(int carbonIndex) {
+        addSubstituent(carbonIndex, "OH");
+    }
+
+    // Основной метод парсинга
     public static Molecule parseMolecule(String formula, int panelWidth, int panelHeight) {
+        if (formula == null || formula.trim().isEmpty()) {
+            formula = "бутан";
+        }
+
+        String originalFormula = formula;
         formula = formula.toLowerCase().trim();
         Molecule molecule = null;
         int carbons = 0;
 
-        // Определяем основное название и количество атомов
+        // Определяем основу
         if (formula.contains("метан")) {
             molecule = new Molecule("Метан");
             carbons = 1;
@@ -139,50 +161,86 @@ public class Molecule {
         } else if (formula.contains("гексан")) {
             molecule = new Molecule("Гексан");
             carbons = 6;
+        } else if (formula.contains("гептан")) {
+            molecule = new Molecule("Гептан");
+            carbons = 7;
+        } else if (formula.contains("октан")) {
+            molecule = new Molecule("Октан");
+            carbons = 8;
         } else {
-            // По умолчанию
-            molecule = new Molecule(formula);
-            carbons = 4;
+            // Если не распознали - используем введенное название
+            molecule = new Molecule(originalFormula);
+            carbons = 4; // По умолчанию
         }
 
         // Создаем цепь
         molecule.createMainChain(carbons, panelWidth, panelHeight);
 
-        // Добавляем заместители
-        if (formula.contains("метил")) {
-            if (formula.contains("2-метил")) {
-                molecule.addMethyl(1);
-            } else if (formula.contains("3-метил")) {
-                molecule.addMethyl(2);
-            } else {
-                molecule.addMethyl(1); // По умолчанию на позицию 2
-            }
-        }
-
-        if (formula.contains("хлор")) {
-            if (formula.contains("1-хлор")) {
-                molecule.addSubstituent(0, "Cl");
-            } else if (formula.contains("2-хлор")) {
-                molecule.addSubstituent(1, "Cl");
-            } else if (formula.contains("3-хлор")) {
-                molecule.addSubstituent(2, "Cl");
-            }
-        }
-
-        if (formula.contains("бром")) {
-            if (formula.contains("2-бром")) {
-                molecule.addSubstituent(1, "Br");
-            }
-        }
-
-        if (formula.contains("диметил")) {
-            if (formula.contains("2,3-диметил")) {
-                molecule.addMethyl(1);
-                molecule.addMethyl(2);
-            }
-        }
+        // Парсим заместители
+        parseSubstituents(formula, molecule);
 
         return molecule;
+    }
+
+    private static void parseSubstituents(String formula, Molecule molecule) {
+        // Удаляем пробелы для удобства парсинга
+        formula = formula.replace(" ", "").replace("-", "");
+
+        // Ищем цифры (позиции заместителей)
+        for (int i = 0; i < formula.length(); i++) {
+            if (Character.isDigit(formula.charAt(i))) {
+                int positionStart = i;
+                while (i < formula.length() && Character.isDigit(formula.charAt(i))) {
+                    i++;
+                }
+
+                if (i < formula.length()) {
+                    String positionStr = formula.substring(positionStart, i);
+                    int position = Integer.parseInt(positionStr) - 1; // Внутренний индекс
+
+                    // Определяем тип заместителя
+                    if (i + 3 <= formula.length()) {
+                        String nextChars = formula.substring(i, Math.min(i + 6, formula.length()));
+
+                        if (nextChars.startsWith("метил")) {
+                            molecule.addMethyl(position);
+                            i += 4; // Пропускаем "метил"
+                        } else if (nextChars.startsWith("этил")) {
+                            molecule.addEthyl(position);
+                            i += 3; // Пропускаем "этил"
+                        } else if (nextChars.startsWith("хлор")) {
+                            molecule.addSubstituent(position, "Cl");
+                            i += 3; // Пропускаем "хлор"
+                        } else if (nextChars.startsWith("бром")) {
+                            molecule.addSubstituent(position, "Br");
+                            i += 3; // Пропускаем "бром"
+                        } else if (nextChars.startsWith("гидрокси") || nextChars.startsWith("окси")) {
+                            molecule.addHydroxyl(position);
+                            i += nextChars.startsWith("гидрокси") ? 7 : 2;
+                        } else if (nextChars.startsWith("фтор")) {
+                            molecule.addSubstituent(position, "F");
+                            i += 3;
+                        } else if (nextChars.startsWith("йод")) {
+                            molecule.addSubstituent(position, "I");
+                            i += 2;
+                        }
+                    }
+                }
+            }
+        }
+
+        // Обработка ди-, три-замещенных
+        if (formula.contains("диметил")) {
+            // Ищем позиции
+            String[] parts = formula.split("диметил")[0].split(",");
+            for (String part : parts) {
+                part = part.replaceAll("[^0-9]", "");
+                if (!part.isEmpty()) {
+                    int pos = Integer.parseInt(part) - 1;
+                    molecule.addMethyl(pos);
+                }
+            }
+        }
     }
 
     // Метод отрисовки
@@ -193,72 +251,92 @@ public class Molecule {
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
                 RenderingHints.VALUE_ANTIALIAS_ON);
 
-        // Толщина линий
-        int lineWidth = Math.max(2, 4 - mainChain.size() / 3);
-        g2d.setStroke(new BasicStroke(lineWidth));
+        // Толщина линий в зависимости от размера молекулы
+        int lineWidth = Math.max(2, 5 - mainChain.size() / 3);
+        BasicStroke mainStroke = new BasicStroke(lineWidth, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
+        BasicStroke subStroke = new BasicStroke(lineWidth - 1, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
 
-        // Рисуем основную цепь (черная)
+        // Рисуем основную цепь
+        g2d.setStroke(mainStroke);
         g2d.setColor(Color.BLACK);
+
         for (int i = 0; i < mainChain.size() - 1; i++) {
             Point p1 = mainChain.get(i);
             Point p2 = mainChain.get(i + 1);
             g2d.drawLine(p1.x, p1.y, p2.x, p2.y);
         }
 
-        // Рисуем атомы углерода (красные точки)
-        int pointSize = Math.max(4, 8 - mainChain.size());
-        g2d.setColor(Color.RED);
+        // Рисуем атомы углерода
+        int pointSize = Math.max(4, 9 - mainChain.size());
+        g2d.setColor(new Color(200, 0, 0)); // Темно-красный
         for (Point p : mainChain) {
             g2d.fillOval(p.x - pointSize, p.y - pointSize,
                     pointSize * 2, pointSize * 2);
         }
 
-        // Рисуем заместители (синие линии)
-        g2d.setColor(Color.BLUE);
-        g2d.setStroke(new BasicStroke(lineWidth - 1));
+        // Рисуем заместители
+        g2d.setStroke(subStroke);
+        g2d.setColor(new Color(0, 0, 180)); // Темно-синий
+
+        Font originalFont = g2d.getFont();
+        Font subFont = new Font("Arial", Font.PLAIN, Math.max(10, 14 - mainChain.size() / 2));
 
         for (Integer index : substituents.keySet()) {
             ArrayList<Point> points = substituents.get(index);
             if (points.size() >= 2) {
                 Point p1 = points.get(0);
                 Point p2 = points.get(1);
+
+                // Линия заместителя
                 g2d.drawLine(p1.x, p1.y, p2.x, p2.y);
 
-                // Подписываем заместитель
+                // Подпись заместителя
                 String label = substituentLabels.get(index);
                 if (label != null) {
+                    g2d.setFont(subFont);
                     g2d.setColor(Color.DARK_GRAY);
-                    g2d.setFont(new Font("Arial", Font.PLAIN, 12));
 
+                    // Позиционируем текст рядом с концом линии
                     int labelX = p2.x;
                     int labelY = p2.y;
 
-                    // Позиционируем текст
-                    if (p2.y < p1.y) {
-                        labelY = p2.y - 5;
-                    } else {
-                        labelY = p2.y + 15;
+                    // Смещаем в зависимости от направления
+                    if (p2.y < p1.y) { // Вверх
+                        labelY = p2.y - 8;
+                    } else if (p2.y > p1.y) { // Вниз
+                        labelY = p2.y + 18;
+                    } else { // Горизонтально
+                        if (p2.x > p1.x) { // Вправо
+                            labelX = p2.x + 10;
+                            labelY = p2.y - 5;
+                        } else { // Влево
+                            labelX = p2.x - 10;
+                            labelY = p2.y - 5;
+                        }
                     }
 
-                    // Центрируем
+                    // Центрируем текст
                     FontMetrics fm = g2d.getFontMetrics();
                     int textWidth = fm.stringWidth(label);
                     labelX -= textWidth / 2;
 
                     g2d.drawString(label, labelX, labelY);
-                    g2d.setColor(Color.BLUE);
+                    g2d.setColor(new Color(0, 0, 180));
+                    g2d.setFont(originalFont);
                 }
             }
         }
 
-        // Подписываем название молекулы
+        // Подпись молекулы
         g2d.setColor(Color.BLACK);
-        g2d.setFont(new Font("Arial", Font.BOLD, 16));
-        g2d.drawString(name, 20, 30);
+        g2d.setFont(new Font("Arial", Font.BOLD, 18));
+        g2d.drawString(name, 30, 40);
 
-        // Информация о молекуле
+        // Информация
         g2d.setFont(new Font("Arial", Font.PLAIN, 14));
-        g2d.drawString("Цепь из " + mainChain.size() + " атомов C", 20, 50);
+        g2d.setColor(new Color(80, 80, 80));
+        g2d.drawString("Атомов углерода: " + mainChain.size(), 30, 65);
+        g2d.drawString("Заместителей: " + substituents.size(), 30, 85);
     }
 
     // Геттер для количества атомов углерода
