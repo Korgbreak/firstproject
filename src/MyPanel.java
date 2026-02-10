@@ -29,32 +29,31 @@ public class MyPanel extends JPanel {
         infoLabel = new JLabel("Введите название и нажмите 'Нарисовать'");
         infoLabel.setFont(new Font("Arial", Font.PLAIN, 14));
 
-        // Примеры подсказок
-        JLabel examplesLabel = new JLabel("Примеры: метан, этан, пропан, 2-метилпропан, 2-хлорпропан");
-        examplesLabel.setFont(new Font("Arial", Font.ITALIC, 12));
-        examplesLabel.setForeground(Color.GRAY);
+        // Кнопка возврата в меню
+        JButton backButton = new JButton("← Меню");
+        backButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                // Закрываем текущее окно
+                JFrame frame = (JFrame) SwingUtilities.getWindowAncestor(MyPanel.this);
+                frame.dispose();
+
+                // Открываем главное меню
+                new MainMenu();
+            }
+        });
 
         // Добавляем компоненты
+        controlPanel.add(backButton);
         controlPanel.add(inputLabel);
         controlPanel.add(inputField);
         controlPanel.add(drawButton);
         controlPanel.add(new JSeparator(SwingConstants.VERTICAL));
         controlPanel.add(infoLabel);
 
-        // Панель для примеров
-        JPanel examplesPanel = new JPanel();
-        examplesPanel.setBackground(new Color(250, 250, 250));
-        examplesPanel.add(examplesLabel);
-
-        JPanel topPanel = new JPanel(new BorderLayout());
-        topPanel.add(controlPanel, BorderLayout.NORTH);
-        topPanel.add(examplesPanel, BorderLayout.SOUTH);
-
-        add(topPanel, BorderLayout.NORTH);
+        add(controlPanel, BorderLayout.NORTH);
 
         // Обработчик кнопки
         drawButton.addActionListener(new ActionListener() {
-            @Override
             public void actionPerformed(ActionEvent e) {
                 drawMolecule();
             }
@@ -62,7 +61,6 @@ public class MyPanel extends JPanel {
 
         // Обработчик нажатия Enter в текстовом поле
         inputField.addActionListener(new ActionListener() {
-            @Override
             public void actionPerformed(ActionEvent e) {
                 drawMolecule();
             }
@@ -72,7 +70,11 @@ public class MyPanel extends JPanel {
         molecule = Molecule.parseMolecule("бутан", getWidth(), getHeight());
 
         // Фокус на поле ввода
-        SwingUtilities.invokeLater(() -> inputField.requestFocus());
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                inputField.requestFocus();
+            }
+        });
     }
 
     private void drawMolecule() {
@@ -95,7 +97,6 @@ public class MyPanel extends JPanel {
         }
     }
 
-    @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
 
@@ -148,7 +149,6 @@ public class MyPanel extends JPanel {
         g.drawString("• 2,3-диметилбутан", legendX + 10, legendY + 185);
     }
 
-    @Override
     public Dimension getPreferredSize() {
         return new Dimension(900, 700);
     }
