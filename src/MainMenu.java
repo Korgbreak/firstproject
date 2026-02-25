@@ -1,4 +1,3 @@
-// Простой MainMenu.java без сложной графики
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -6,47 +5,105 @@ import java.awt.event.*;
 public class MainMenu extends JFrame {
 
     public MainMenu() {
-        setTitle("Химические формулы - Главное меню");
+        setTitle("Химический редактор - Главное меню");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(400, 300);
+        setSize(600, 500);
         setLocationRelativeTo(null);
 
-        JPanel panel = new JPanel();
-        panel.setLayout(new GridLayout(3, 1, 10, 10));
-        panel.setBorder(BorderFactory.createEmptyBorder(50, 50, 50, 50));
+        JPanel mainPanel = new JPanel();
+        mainPanel.setLayout(new BorderLayout());
+        mainPanel.setBackground(new Color(230, 240, 255));
 
-        JButton startButton = new JButton("ChemNamer");
-        startButton.addActionListener(new ActionListener() {
+        // Заголовок
+        JLabel titleLabel = new JLabel("Химический редактор", SwingConstants.CENTER);
+        titleLabel.setFont(new Font("Arial", Font.BOLD, 32));
+        titleLabel.setForeground(new Color(0, 0, 100));
+        titleLabel.setBorder(BorderFactory.createEmptyBorder(40, 0, 20, 0));
+
+        // Подзаголовок
+        JLabel subTitleLabel = new JLabel("Выберите режим работы:", SwingConstants.CENTER);
+        subTitleLabel.setFont(new Font("Arial", Font.PLAIN, 18));
+        subTitleLabel.setForeground(new Color(80, 80, 80));
+        subTitleLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 30, 0));
+
+        // Панель с кнопками
+        JPanel buttonPanel = new JPanel();
+        buttonPanel.setLayout(new GridLayout(3, 1, 30, 30));
+        buttonPanel.setBackground(new Color(230, 240, 255));
+        buttonPanel.setBorder(BorderFactory.createEmptyBorder(20, 150, 20, 150));
+
+        // Кнопка 2D конструктора
+        JButton builderButton = new JButton("2D Конструктор молекул");
+        builderButton.setFont(new Font("Arial", Font.BOLD, 18));
+        builderButton.setBackground(new Color(70, 130, 180));
+        builderButton.setForeground(Color.WHITE);
+        builderButton.setFocusPainted(false);
+
+        builderButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 dispose();
-                JFrame frame = new JFrame("ChemNamer");
-                frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-                frame.setSize(800, 600);
-                frame.add(new MyPanel());
-                frame.setVisible(true);
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        JFrame frame = new JFrame("2D Конструктор молекул");
+                        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                        frame.setSize(1000, 700);
+                        frame.setLocationRelativeTo(null);
+
+                        MoleculeBuilder builder = new MoleculeBuilder();
+                        frame.add(builder);
+                        frame.setVisible(true);
+                    }
+                });
             }
         });
 
-        JButton helpButton = new JButton("Справка");
-        helpButton.addActionListener(new ActionListener() {
+        // Кнопка просмотра формул (ваша старая программа)
+        JButton viewerButton = new JButton("Просмотр готовых формул");
+        viewerButton.setFont(new Font("Arial", Font.PLAIN, 16));
+        viewerButton.setBackground(new Color(90, 150, 90));
+        viewerButton.setForeground(Color.WHITE);
+        viewerButton.setFocusPainted(false);
+
+        viewerButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                JOptionPane.showMessageDialog(MainMenu.this,
-                        "Простая программа для рисования формул");
+                dispose();
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        JFrame programFrame = new JFrame("Просмотр формул");
+                        programFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                        programFrame.setSize(900, 700);
+                        programFrame.setLocationRelativeTo(null);
+
+                        MyPanel panel = new MyPanel();
+                        programFrame.add(panel);
+                        programFrame.setVisible(true);
+                    }
+                });
             }
         });
 
+        // Кнопка выхода
         JButton exitButton = new JButton("Выход");
+        exitButton.setFont(new Font("Arial", Font.PLAIN, 14));
+        exitButton.setBackground(new Color(180, 90, 90));
+        exitButton.setForeground(Color.WHITE);
+        exitButton.setFocusPainted(false);
+
         exitButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 System.exit(0);
             }
         });
 
-        panel.add(startButton);
-        panel.add(helpButton);
-        panel.add(exitButton);
+        buttonPanel.add(builderButton);
+        buttonPanel.add(viewerButton);
+        buttonPanel.add(exitButton);
 
-        add(panel);
+        mainPanel.add(titleLabel, BorderLayout.NORTH);
+        mainPanel.add(subTitleLabel, BorderLayout.CENTER);
+        mainPanel.add(buttonPanel, BorderLayout.SOUTH);
+
+        add(mainPanel);
         setVisible(true);
     }
 }

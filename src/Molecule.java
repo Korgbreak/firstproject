@@ -134,7 +134,7 @@ public class Molecule {
     // Основной метод парсинга
     public static Molecule parseMolecule(String formula, int panelWidth, int panelHeight) {
         if (formula == null || formula.trim().isEmpty()) {
-            formula = "бутан";
+            formula = "error";
         }
 
         String originalFormula = formula;
@@ -167,10 +167,6 @@ public class Molecule {
         } else if (formula.contains("октан")) {
             molecule = new Molecule("Октан");
             carbons = 8;
-        } else {
-            // Если не распознали - используем введенное название
-            molecule = new Molecule(originalFormula);
-            carbons = 4; // По умолчанию
         }
 
         // Создаем цепь
