@@ -10,9 +10,7 @@ del /q classes\*.class 2>nul
 del /q build\*.jar 2>nul
 
 echo Compiling Java files...
-cd src
-javac -d ../classes Main.java MainMenu.java MyPanel.java Molecule.java MoleculeBuilder.java
-cd ..
+javac -d classes src/Main.java src/MainMenu.java src/MyPanel.java src/Molecule.java src/MoleculeBuilder.java
 
 if %errorlevel% neq 0 (
     echo Compilation failed!
@@ -23,7 +21,6 @@ echo Compilation successful!
 
 echo Manifest-Version: 1.0 > manifest.txt
 echo Main-Class: Main >> manifest.txt
-echo Class-Path: . >> manifest.txt
 echo. >> manifest.txt
 
 echo Creating JAR file...
