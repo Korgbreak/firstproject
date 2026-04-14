@@ -69,19 +69,19 @@ public class Molecule {
 
         // Определяем направление в зависимости от положения атома
         if (mainChain.size() == 1) {
-            // Метан - во все стороны (рисуем только один заместитель)
+            // Метан
             dx = 0;
             dy = -length;
         } else if (carbonIndex == 0) {
-            // Первый атом - влево-вверх
+            // Первый атом
             dx = -length;
             dy = -length;
         } else if (carbonIndex == mainChain.size() - 1) {
-            // Последний атом - вправо-вверх
+            // Последний атом
             dx = length;
             dy = -length;
         } else {
-            // Средние атомы - перпендикулярно цепи
+            // Средние атомы
             Point prev = mainChain.get(carbonIndex - 1);
             Point next = mainChain.get(carbonIndex + 1);
 
@@ -275,7 +275,7 @@ public class Molecule {
         g2d.setColor(new Color(0, 0, 180)); // Темно-синий
 
         Font originalFont = g2d.getFont();
-        Font subFont = new Font("Arial", Font.PLAIN, Math.max(10, 14 - mainChain.size() / 2));
+        Font subFont = new Font("Arial Rounded MT", Font.BOLD, Math.max(20, 14 - mainChain.size() / 2));
 
         for (Integer index : substituents.keySet()) {
             ArrayList<Point> points = substituents.get(index);
@@ -325,14 +325,8 @@ public class Molecule {
 
         // Подпись молекулы
         g2d.setColor(Color.BLACK);
-        g2d.setFont(new Font("Arial", Font.BOLD, 18));
+        g2d.setFont(new Font("Bahnschrift", Font.BOLD, 18));
         g2d.drawString(name, 30, 40);
-
-        // Информация
-        g2d.setFont(new Font("Arial", Font.PLAIN, 14));
-        g2d.setColor(new Color(80, 80, 80));
-        g2d.drawString("Атомов углерода: " + mainChain.size(), 30, 65);
-        g2d.drawString("Заместителей: " + substituents.size(), 30, 85);
     }
 
     // Геттер для количества атомов углерода

@@ -19,15 +19,15 @@ public class MyPanel extends JPanel {
         // Текстовое поле для ввода
         JLabel inputLabel = new JLabel("Введите название соединения:");
         inputField = new JTextField(20);
-        inputField.setFont(new Font("Arial", Font.PLAIN, 14));
+        inputField.setFont(new Font("Bahnschrift", Font.BOLD, 14));
 
         // Кнопка для рисования
         drawButton = new JButton("Нарисовать");
-        drawButton.setFont(new Font("Arial", Font.BOLD, 14));
+        drawButton.setFont(new Font("Bahnschrift", Font.BOLD, 14));
 
         // Информационная метка
         infoLabel = new JLabel("Введите название и нажмите 'Нарисовать'");
-        infoLabel.setFont(new Font("Arial", Font.PLAIN, 14));
+        infoLabel.setFont(new Font("Bahnschrift", Font.BOLD, 14));
 
         // Кнопка возврата в меню
         JButton backButton = new JButton("← Меню");
