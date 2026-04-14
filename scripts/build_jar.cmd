@@ -23,6 +23,7 @@ echo Compilation successful!
 
 echo Manifest-Version: 1.0 > manifest.txt
 echo Main-Class: Main >> manifest.txt
+echo Class-Path: . >> manifest.txt
 echo. >> manifest.txt
 
 echo Creating JAR file...
