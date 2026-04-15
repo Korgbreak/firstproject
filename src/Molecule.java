@@ -123,6 +123,24 @@ public class Molecule {
 
         String originalFormula = formula;
         formula = formula.toLowerCase().trim();
+
+        // ===== НОРМАЛИЗАЦИЯ НАЗВАНИЙ ПО IUPAC =====
+        // Убираем пробелы и дефисы для сравнения
+        String cleanFormula = formula.replaceAll("\\s+", "").replaceAll("-", "");
+
+        // 1-метилбутан → пентан
+        if (cleanFormula.equals("1метилбутан") || cleanFormula.equals("4метилбутан")) {
+            formula = "пентан";
+        }
+        // 1-метилпропан → бутан
+        else if (cleanFormula.equals("1метилпропан") || cleanFormula.equals("3метилпропан")) {
+            formula = "бутан";
+        }
+        // 1-этилпропан → пентан
+        else if (cleanFormula.equals("1этилпропан") || cleanFormula.equals("3этилпропан")) {
+            formula = "пентан";
+        }
+
         Molecule molecule = null;
         int carbons = 0;
 
