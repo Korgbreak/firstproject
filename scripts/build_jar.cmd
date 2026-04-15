@@ -10,7 +10,7 @@ del /q classes\*.class 2>nul
 del /q build\*.jar 2>nul
 
 echo Compiling Java files...
-javac -d classes Main.java MainMenu.java MyPanel.java Molecule.java MoleculeBuilder.java
+javac -encoding UTF-8 -d classes src/Main.java src/MainMenu.java src/MyPanel.java src/Molecule.java src/MoleculeBuilder.java
 
 if %errorlevel% neq 0 (
     echo Compilation failed!
