@@ -17,11 +17,8 @@ if %errorlevel% neq 0 (
     exit /b 1
 )
 
-echo Compilation successful!
-
-echo Manifest-Version: 1.0 > manifest.txt
-echo Main-Class: Main >> manifest.txt
-echo. >> manifest.txt
+echo Copying resources...
+if exist src/background.jpg copy src\background.jpg classes\
 
 echo Creating JAR file...
 jar cvfm build/MolChemView.jar manifest.txt -C classes .

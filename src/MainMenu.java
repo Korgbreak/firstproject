@@ -18,7 +18,7 @@ public class MainMenu extends JFrame {
 
         try {
 
-            backgroundImage = ImageIO.read(new File("images/background.jpg"));
+            backgroundImage = ImageIO.read(new File("src/background.jpg"));
 
         } catch (IOException e) {
             System.out.println("Не удалось загрузить фоновое изображение: " + e.getMessage());
