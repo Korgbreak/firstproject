@@ -7,13 +7,11 @@ import java.util.List;
 
 public class MoleculeBuilder extends JPanel {
 
-    // Константы
     private static final double BOND_LENGTH = 80;
     private static final double ROTATION_STEP = Math.toRadians(30);
     private static final int HOVER_RADIUS = 20;
     private static final int BOND_HOVER_RADIUS = 15;
 
-    // Класс для вершины (углерод) - невидимый
     class Vertex {
         Point2D.Double position;
         int id;
@@ -25,8 +23,6 @@ public class MoleculeBuilder extends JPanel {
             this.bonds = new ArrayList<>();
         }
     }
-
-    // Класс для функциональной группы (видимый атом)
     class FunctionalGroup {
         Point2D.Double position;
         String symbol;
@@ -71,7 +67,6 @@ public class MoleculeBuilder extends JPanel {
         }
     }
 
-    // Класс для связи
     class Bond {
         Vertex vertex1;
         Vertex vertex2;
@@ -156,7 +151,6 @@ public class MoleculeBuilder extends JPanel {
         }
     }
 
-    // Поля класса
     private List<Vertex> vertices;
     private List<Bond> bonds;
     private List<FunctionalGroup> groups;
@@ -214,7 +208,7 @@ public class MoleculeBuilder extends JPanel {
                             selectedVertex = hoveredVertex;
                             updatePreview(e.getPoint());
                         } else if (hoveredGroup != null) {
-                            // Можно выбрать группу для редактирования
+
                         } else if (hoveredBond != null) {
                             cycleBondOrder(hoveredBond);
                         } else {
@@ -276,7 +270,6 @@ public class MoleculeBuilder extends JPanel {
         controlPanel.setBackground(new Color(240, 240, 240));
         controlPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 5));
 
-        // Кнопка возврата в меню
         JButton menuButton = new JButton("← Меню");
         menuButton.setFont(new Font("Arial", Font.BOLD, 12));
         menuButton.setBackground(new Color(255,255,255));
@@ -291,13 +284,11 @@ public class MoleculeBuilder extends JPanel {
         });
         controlPanel.add(menuButton);
 
-        // Кнопка для углерода
         JToggleButton carbonBtn = new JToggleButton("C (цепь)");
         carbonBtn.setSelected(true);
         carbonBtn.addActionListener(e -> currentGroup = null);
         controlPanel.add(carbonBtn);
 
-        // Кнопки функциональных групп
         String[] groups = {"OH", "NH2", "O", "N", "Cl", "Br", "F"};
         ButtonGroup groupBtnGroup = new ButtonGroup();
         groupBtnGroup.add(carbonBtn);
@@ -311,7 +302,6 @@ public class MoleculeBuilder extends JPanel {
 
         controlPanel.add(new JLabel("  "));
 
-        // Кнопки типов связей
         JToggleButton singleBtn = new JToggleButton("—");
         singleBtn.setSelected(true);
         singleBtn.addActionListener(e -> currentBondOrder = 1);
@@ -327,7 +317,6 @@ public class MoleculeBuilder extends JPanel {
 
         controlPanel.add(new JLabel("  "));
 
-        // Кнопка очистки
         JButton clearBtn = new JButton("Очистить");
         clearBtn.addActionListener(e -> {
             vertices.clear();
@@ -543,7 +532,6 @@ public class MoleculeBuilder extends JPanel {
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
                 RenderingHints.VALUE_ANTIALIAS_ON);
 
-        // Подсветка связи
         if (hoveredBond != null) {
             Point2D.Double center = hoveredBond.getCenterPoint();
             double length = hoveredBond.getLength();
@@ -565,17 +553,14 @@ public class MoleculeBuilder extends JPanel {
             g2d.setTransform(old);
         }
 
-        // Рисуем связи
         for (Bond bond : bonds) {
             bond.draw(g2d);
         }
 
-        // Рисуем функциональные группы
         for (FunctionalGroup group : groups) {
             group.draw(g2d);
         }
 
-        // Точки для углеродов
         g2d.setColor(new Color(100, 100, 100, 100));
         for (Vertex v : vertices) {
             g2d.fillOval((int) v.position.x - 2, (int) v.position.y - 2, 4, 4);
@@ -584,7 +569,6 @@ public class MoleculeBuilder extends JPanel {
             }
         }
 
-        // Подсветка вершин и групп
         if (hoveredVertex != null) {
             g2d.setColor(new Color(255, 255, 0, 80));
             g2d.fillOval((int)hoveredVertex.position.x - 12,
@@ -596,7 +580,6 @@ public class MoleculeBuilder extends JPanel {
                     (int)hoveredGroup.position.y - 15, 30, 30);
         }
 
-        // Предварительный просмотр
         if (selectedVertex != null && previewPoint != null) {
             g2d.setColor(new Color(0, 100, 255, 150));
             g2d.setStroke(new BasicStroke(2, BasicStroke.CAP_ROUND,

@@ -25,15 +25,12 @@ public class MainMenu extends JFrame {
             backgroundImage = null;
         }
 
-        // Панель с фоном
         JPanel mainPanel = new JPanel() {
             @Override
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
                 if (backgroundImage != null) {
-                    // Рисуем картинку на весь размер
                     g.drawImage(backgroundImage, 0, 0, getWidth(), getHeight(), this);
-                    // Затемняющий слой для лучшей читаемости текста (опционально)
                     g.setColor(new Color(0, 0, 0, 120));
                     g.fillRect(0, 0, getWidth(), getHeight());
                 }
@@ -41,19 +38,16 @@ public class MainMenu extends JFrame {
         };
         mainPanel.setLayout(new BorderLayout());
 
-        // Заголовок
         JLabel titleLabel = new JLabel("MolChemView", SwingConstants.CENTER);
         titleLabel.setFont(new Font("Arial Rounded MT", Font.BOLD, 32));
         titleLabel.setForeground(Color.WHITE);
         titleLabel.setBorder(BorderFactory.createEmptyBorder(40, 0, 20, 0));
 
-        // Панель с кнопками (прозрачная, чтобы фон просвечивал)
         JPanel buttonPanel = new JPanel();
         buttonPanel.setOpaque(false);
         buttonPanel.setLayout(new GridLayout(3, 1, 30, 30));
         buttonPanel.setBorder(BorderFactory.createEmptyBorder(20, 150, 20, 150));
 
-        // Кнопка 2D конструктора
         JButton builderButton = new JButton("Редактор молекул");
         builderButton.setFont(new Font("Bahnschrift", Font.BOLD, 20));
         builderButton.setBackground(new Color(70, 130, 180));
@@ -79,7 +73,6 @@ public class MainMenu extends JFrame {
             }
         });
 
-        // Кнопка просмотра формул
         JButton viewerButton = new JButton("Просмотр формул");
         viewerButton.setFont(new Font("Bahnschrift", Font.PLAIN, 20));
         viewerButton.setBackground(new Color(90, 150, 90));
@@ -105,7 +98,6 @@ public class MainMenu extends JFrame {
             }
         });
 
-        // Кнопка выхода
         JButton exitButton = new JButton("Выход");
         exitButton.setFont(new Font("Bahnschrift", Font.PLAIN, 20));
         exitButton.setBackground(new Color(180, 90, 90));
