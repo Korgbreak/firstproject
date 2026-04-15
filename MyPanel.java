@@ -11,38 +11,30 @@ public class MyPanel extends JPanel {
     public MyPanel() {
         setLayout(new BorderLayout());
 
-        // Панель управления сверху
         JPanel controlPanel = new JPanel();
         controlPanel.setBackground(new Color(240, 240, 240));
         controlPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 10, 10));
 
-        // Текстовое поле для ввода
         JLabel inputLabel = new JLabel("Введите название соединения:");
         inputField = new JTextField(20);
         inputField.setFont(new Font("Bahnschrift", Font.BOLD, 14));
 
-        // Кнопка для рисования
         drawButton = new JButton("Нарисовать");
         drawButton.setFont(new Font("Bahnschrift", Font.BOLD, 14));
 
-        // Информационная метка
         infoLabel = new JLabel("Введите название и нажмите 'Нарисовать'");
         infoLabel.setFont(new Font("Bahnschrift", Font.BOLD, 14));
 
-        // Кнопка возврата в меню
         JButton backButton = new JButton("← Меню");
         backButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                // Закрываем текущее окно
                 JFrame frame = (JFrame) SwingUtilities.getWindowAncestor(MyPanel.this);
                 frame.dispose();
 
-                // Открываем главное меню
                 new MainMenu();
             }
         });
 
-        // Добавляем компоненты
         controlPanel.add(backButton);
         controlPanel.add(inputLabel);
         controlPanel.add(inputField);
@@ -52,24 +44,20 @@ public class MyPanel extends JPanel {
 
         add(controlPanel, BorderLayout.NORTH);
 
-        // Обработчик кнопки
         drawButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 drawMolecule();
             }
         });
 
-        // Обработчик нажатия Enter в текстовом поле
         inputField.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 drawMolecule();
             }
         });
 
-        // Начальная молекула
         molecule = Molecule.parseMolecule("бутан", getWidth(), getHeight());
 
-        // Фокус на поле ввода
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 inputField.requestFocus();
@@ -100,16 +88,13 @@ public class MyPanel extends JPanel {
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
 
-        // Белый фон
         g.setColor(Color.WHITE);
         g.fillRect(0, 0, getWidth(), getHeight());
 
-        // Рисуем молекулу, если она есть
         if (molecule != null) {
             molecule.draw(g);
         }
 
-        // Рисуем легенду
         drawLegend(g);
     }
 
@@ -137,7 +122,6 @@ public class MyPanel extends JPanel {
         g.setColor(Color.BLACK);
         g.drawString("- атом углерода", legendX + 50, legendY + 65);
 
-        // Примеры использования
         g.setColor(Color.DARK_GRAY);
         g.setFont(new Font("Arial", Font.PLAIN, 11));
         g.drawString("Примеры ввода:", legendX, legendY + 90);
