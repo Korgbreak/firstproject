@@ -5,6 +5,7 @@ import java.awt.image.BufferedImage;
 import javax.imageio.ImageIO;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 
 public class MainMenu extends JFrame {
 
@@ -17,11 +18,29 @@ public class MainMenu extends JFrame {
         setLocationRelativeTo(null);
 
         try {
+            // Вариант 1: из ресурсов JAR
+            InputStream is = getClass().getResourceAsStream("/background.jpg");
+            if (is == null) {
+                // Вариант 2: из папки src
+                is = getClass().getResourceAsStream("background.jpg");
+            }
+            if (is == null) {
+                // Вариант 3: из файловой системы
+                File imgFile = new File("background.jpg");
+                if (imgFile.exists()) {
+                    backgroundImage = ImageIO.read(imgFile);
+                }
+            } else {
+                backgroundImage = ImageIO.read(is);
+            }
 
-            backgroundImage = ImageIO.read(new File("src/background.jpg"));
-
-        } catch (IOException e) {
-            System.out.println("Не удалось загрузить фоновое изображение: " + e.getMessage());
+            if (backgroundImage != null) {
+                System.out.println("Background loaded successfully");
+            } else {
+                System.out.println("Background image not found");
+            }
+        } catch (Exception e) {
+            System.out.println("Failed to load background: " + e.getMessage());
             backgroundImage = null;
         }
 

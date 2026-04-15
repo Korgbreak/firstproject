@@ -18,7 +18,12 @@ if %errorlevel% neq 0 (
 )
 
 echo Copying resources...
-if exist src/background.jpg copy src\background.jpg classes\
+if exist src/background.jpg (
+    copy src\background.jpg classes\
+    echo Background copied to classes
+) else (
+    echo WARNING: background.jpg not found in src!
+)
 
 echo Creating manifest...
 echo Manifest-Version: 1.0 > manifest.txt
@@ -33,6 +38,9 @@ if %errorlevel% neq 0 (
     exit /b 1
 )
 
+echo Listing JAR contents...
+jar tf build/MolChemView.jar | findstr ".jpg"
+
 echo Cleaning up...
 del manifest.txt
 rmdir /s /q classes
@@ -41,4 +49,3 @@ echo ========================================
 echo Build complete!
 echo JAR created: build/MolChemView.jar
 echo ========================================
-dir build\*.jar
