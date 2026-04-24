@@ -128,6 +128,12 @@ public class Molecule {
         // Убираем пробелы и дефисы для сравнения
         String cleanFormula = formula.replaceAll("\\s+", "").replaceAll("-", "");
 
+        if (cleanFormula.equals("1-метилэтан")){
+            formula = "пропан";
+        }
+        if (cleanFormula.equals("1-этилэтан")){
+            formula = "бутан";
+        }
         // 1-метилбутан → пентан
         if (cleanFormula.equals("1метилбутан") || cleanFormula.equals("4метилбутан")) {
             formula = "пентан";
@@ -139,6 +145,12 @@ public class Molecule {
         // 1-этилпропан → пентан
         else if (cleanFormula.equals("1этилпропан") || cleanFormula.equals("3этилпропан")) {
             formula = "пентан";
+        }
+        else if (cleanFormula.equals("1метилэтан")){
+            formula = "пропан";
+        }
+        else if (cleanFormula.equals("1этилэтан")){
+            formula = "бутан";
         }
 
         Molecule molecule = null;
